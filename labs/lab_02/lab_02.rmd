@@ -82,7 +82,12 @@ head(maryland_expenses)
 **A5**
 
 ```{r}
+
+maryland_expenses|>
+  filter(str_detect(address, " Maryland "))
+
 maryland_expenses_with_state <- maryland_expenses |>
+  filter(!is.na(amount)) |> # i don't know what this does
   mutate (
     spending_location = case_when(
       str_detect(address, " Maryland ") ~ "In-state",
