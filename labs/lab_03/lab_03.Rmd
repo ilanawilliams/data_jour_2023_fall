@@ -51,8 +51,7 @@ pg_schools <- cleaned_payments |> #to make a new dataframe, put new name in the 
     vendor_name =="BOARD OF EDUCATION OF PRINCE GEORGE" | #line means or
     vendor_name =="BOARD OF EDUCATION OF PRINCE GEORGES COUNTY MD" |
     vendor_name =="BOARD OF EDUCATION OF PRINCE GEORGE'S COUNTY"
-  )
-
+  )#there were more variations, but i wouldn't have known, did not include community college because we're looking at K-12 vs higher education
 ```
 
 Q2: Using that `pg_schools` dataframe, write code to calculate the total amount of payments to the Prince George's County School system for each fiscal year. Which fiscal year had the largest total amount? Are there any aspects of the results that stand out to you?
@@ -61,8 +60,11 @@ A2: The fiscal year with the most spending is 2022. Nothing sticks out, FY2022 c
 
 ```{r}
 pg_schools |>
+  #another way: filter(str_detect(vendor_name, 'PRINCE')) to filter out all the names with PG County
 group_by(fiscal_year)|> #group by what you want to see #fiscal year is on far left:)
-  summarise(total_amont=sum(amount))
+  summarise(total_amont=sum(amount))|>
+#not every year was in data set
+arrange(desc(total_amount))
 ```
 
 Q3. You're interested in examining the vendors paid for capital projects at the University of Maryland. Search the payments data to find those payments, then write code to produce a list of each vendor and the total amount it received. Look carefully at that list - what cleaning will it require to ensure that you have only one row per vendor and zip code? Provide at least three examples of vendor names that are similar and should be combined into one. Describe how you might clean that data so that any nearly identical vendors would look identical - what would you change and how?
