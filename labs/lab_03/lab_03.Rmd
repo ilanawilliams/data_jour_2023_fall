@@ -28,7 +28,7 @@ Load the two datasets we worked with in the pre_lab: the Maryland payments to ve
 
 ```{r}
 # Load in the Maryland state agency payments data, making sure that it correctly sets the datatypes using all of the rows
-cleaned_payments <- payments |> #can you explain renaming/saving?
+cleaned_payments <- payments |> #can you explain renaming/saving? 
   clean_names()
 
 # Load in the Maryland grants and loan data
@@ -51,7 +51,7 @@ pg_schools <- cleaned_payments |> #to make a new dataframe, put new name in the 
     vendor_name =="BOARD OF EDUCATION OF PRINCE GEORGE" | #line means or
     vendor_name =="BOARD OF EDUCATION OF PRINCE GEORGES COUNTY MD" |
     vendor_name =="BOARD OF EDUCATION OF PRINCE GEORGE'S COUNTY"
-  )#there were more variations, but i wouldn't have known, did not include community college because we're looking at K-12 vs higher education
+  )#there were more variations, but i wouldn't have known, did not include community college because we're looking at K-12 vs higher education; there about 90 records for the school system as vendor
 ```
 
 Q2: Using that `pg_schools` dataframe, write code to calculate the total amount of payments to the Prince George's County School system for each fiscal year. Which fiscal year had the largest total amount? Are there any aspects of the results that stand out to you?
@@ -65,6 +65,7 @@ group_by(fiscal_year)|> #group by what you want to see #fiscal year is on far le
   summarise(total_amont=sum(amount))|>
 #not every year was in data set
 arrange(desc(total_amount))
+#the lack of other years should be a sign that you don't have all of the records you need from your work in A1
 ```
 
 Q3. You're interested in examining the vendors paid for capital projects at the University of Maryland. Search the payments data to find those payments, then write code to produce a list of each vendor and the total amount it received. Look carefully at that list - what cleaning will it require to ensure that you have only one row per vendor and zip code? Provide at least three examples of vendor names that are similar and should be combined into one. Describe how you might clean that data so that any nearly identical vendors would look identical - what would you change and how?
@@ -81,7 +82,7 @@ capital_projects <- cleaned_payments |> #to make a new dataframe, put new name i
     agency_name =="CAPITAL PROJECTS- UNIVERSITY OF MARYLAND"
   )|>
 group_by(vendor_name, vendor_zip)|>
-  summarise(total_amount=sum(amount)) #I don't understand the zip code part of the question; I think I'm missing something??
+  summarise(total_amount=sum(amount)) #I don't understand the zip code part of the question; I think I'm missing something?? need more examples of vendors and you want to mutate and case_when to clean up similar but distinct names 
 
 ```
 
@@ -94,7 +95,7 @@ cleaned_md_grants_loans |>
   #filter(fiscal_year==2016 i fiscal_year==2020)
   filter(str_detect(grantor, "stem cell") | (str_detect(grantor, "STEM CELL")))|> #each one has stem cell but filter is case sensitive, can use str_detect 
 group_by(fiscal_year)|>
-summarise(total_amount=sum(amount)) #I think I might be missing something??
+summarise(total_amount=sum(amount)) #I think I might be missing something?? used str_detect to look in the description column that would have found more stem cell grants
 
 ```
 
