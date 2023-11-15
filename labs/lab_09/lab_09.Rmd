@@ -1,0 +1,129 @@
+---
+title: "lab_09.Rmd"
+author: "derek willis"
+date: "2023-04-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## You will need
+
+-   A Datawrapper account
+-   Data in CSV files in the `data` folder
+
+## Load libraries and establish settings
+
+**Task** Create a codeblock and load appropriate packages and settings for this lab.
+
+```{r}
+# load libraries here
+library(tidyverse)
+library(janitor)
+library(tidycensus)
+```
+
+## Questions
+
+**Q1.** You want to explore the differences between the electoral performances of Dan Cox in 2022 and Larry Hogan in 2018. Except a map is probably not the best way to show that. Let's make a chart instead, and the type is up to you, but the goal is to clearly show the differences between the two.
+
+You MUST do the following things when answering this question: \* Load the md_gov_county.csv and md_gov_county_18.csv files from the data folder \* Join those dataframes, specifying the join column. \* 
+
+Add columns to generate percentages for Cox and Hogan. \* 
+
+Export that joined dataframe to a CSV file using `write_csv`. \* 
+
+Using that exported CSV, make a chart with Datawrapper. What kind of chart is up to you, so experiment with a few kinds of charts to see what answers the question above in the clearest way. Your chart MUST: \* 
+
+Have a title, description and source that tells readers about the data. The title and description should highlight the most newsworthy or important aspect. \* 
+
+Easily readable labels and values \* 
+
+Publish your chart \* Describe your thought process below - why you chose to make the chart you did - and add the URL of your chart.
+
+**A1.**I chose to make a bullet chart because the question asked about votes for Cox and Hogan, so I needed a chart that would allow me to show both. This the first time I tried a bullet bar and I like the layout better than split bars. (https://www.datawrapper.de/_/2x2Nl/)
+
+```{r}
+md_gov_county <- read_csv("data/md_gov_county.csv")
+md_gov_county_18 <- read_csv("data/md_gov_county_18.csv")
+
+all_md_gov_county <- md_gov_county_18 |> left_join(md_gov_county, join_by ("County", "GEOID")) #match each other
+
+all_md_gov_county <- all_md_gov_county|>
+  clean_names()|>
+  rename(write_ins_2018 = "write_ins_x" , 
+         write_ins_2022 = "write_ins_y")
+
+all_md_gov_county <- all_md_gov_county|>
+  mutate(total_votes = (hogan+jealous+quinn+schlakman+cox+moore+lashar+wallace+harding+sefcik+write_ins_2018+write_ins_2022))|>
+  mutate(cox_pct = (cox/total_votes)*100)|>
+  mutate(hogan_pct = (hogan/total_votes)*100)|>
+  arrange(desc(total_votes))
+
+write_csv(all_md_gov_county, "data/all_md_gov_county.csv")
+
+```
+
+**Q2.** You're interested in seeing how the methods of voting have changed in Maryland since 2018. Using the `md_votes_by_type.csv` that has data from the top of the ticket (governor in 2018 and 2022, president in 2020), 
+
+make a chart showing the percentage of votes cast in each category - early voting, election day and mail - over the three years. You'll need to make those percentages in R and then export the CSV using `write_csv`, then make the chart in Datawrapper. 
+
+Have a title, description and source that tells readers about the data. The title and description should highlight the most newsworthy or important aspect.
+
+HINT: In Datawrapper's "Check and Describe" tab, you can click on a column to get the option of "hiding" it in any visualization.
+
+What do you think the story here is? Put the answer below along with the URL of your chart.
+
+**A2.**Mail-in ballots jumped from 2018 to 2020. This shows mail-in ballots are here to stay/the rise of mail-in ballots will continue. (https://www.datawrapper.de/_/iBr6N/)
+
+```{r}
+md_votes_by_type <- read_csv("data/md_votes_by_type.csv")
+
+md_votes_by_type <- md_votes_by_type|>
+  clean_names()|>
+  mutate(early_pct = (early/total)*100) |>
+  mutate(mail_pct = (mail/total)*100)|>
+  mutate(election_day_pct = (election_day/total)*100)|>
+  arrange(desc(total))
+
+write_csv(md_votes_by_type, "data/md_votes_by_type.csv")
+
+```
+
+**Q3.** You want to know more about the geography of 911 overdose calls in Montgomery County, Maryland, in 2022. To do that, you'll make a choropleth map in Datawrapper. You will need to:
+
+-   Read the file into R and create columns for the number of calls in each zip code and the percentage of all calls that number represents and then export that CSV to use in your map.
+-   Search for Maryland zip codes (use the 2020 data) as the base map.
+-   Upload the CSV file.
+-   Change the tooltip to show both the number and the percentage (you can put them side by side or put one under the other). Make sure to properly format both numbers to make them readable.
+-   Add labels to your map that locate prominent places in the county.
+-   Have a title, description and source that tells readers about the data. The title and description should highlight the most newsworthy or important aspect.
+-   Make any other changes to data that helps you make a more accurate map.
+
+What do you think the story here is, and what would you want to know more about? Put the answer below along with the URL of your map.
+
+**A3.**Okay so I tried the map and could not figure it out. Instead, I looked up the zip code that had the most calls and found Germantown residents made the most calls. I tried making the total calls change from values and to FIPs and that worked for a second, but then didn't work when I checked the data again. I also tried the map for zip codes, but that also did not show up. (https://www.datawrapper.de/_/FOoi0/)
+
+```{r}
+montgomery_2022_overdoses <- read_csv("data/montgomery_2022_overdoses.csv")
+
+all_montgomery_2022_overdoses <- montgomery_2022_overdoses|>
+  mutate(zip = as.character(zip))|>
+  group_by(zip)|>
+  summarise(total_calls = n())|> 
+  arrange(desc(total_calls))
+
+#acs5_geography <- load_variables(2010, "acs5", cache = TRUE)
+#View(asc5)
+
+md <- get_acs(geography = "zcta",
+              variables = c(population = "B09021_001"),
+              state = "MD",
+              year = 2019)
+
+all_montgomery_co_2022_overdoses <- all_montgomery_2022_overdoses |> inner_join(md, by=c('zip' = 'GEOID'))
+
+write_csv(all_montgomery_co_2022_overdoses, "data/all_montgomery_co_2022_overdoses.csv")
+```
