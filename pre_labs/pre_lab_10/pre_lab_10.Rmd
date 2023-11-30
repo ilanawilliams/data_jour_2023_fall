@@ -338,7 +338,7 @@ Okay, now let's visualize. We're going to build a choropleth map, with the color
 
 ```{r}
 
-county_centroids <- st_centroid(md_counties)
+county_centroids <- st_centroid(md_counties) #finding geo center of counties to lablel
 county_centroids_df <- as.data.frame(st_coordinates(county_centroids))
 county_centroids_df$NAME <- county_centroids$NAME
 
